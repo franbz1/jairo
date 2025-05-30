@@ -1,0 +1,189 @@
+{% extends 'finanzas/base.html' %}
+
+{% block title %}Dashboard - Control de Finanzas{% endblock %}
+{% block header %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Tarjetas de Resumen -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card income-card text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Ingresos Totales</h5>
+                        <h3>${{ ingresos_total|floatformat:0 }}</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-arrow-up fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card expense-card text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Gastos Totales</h5>
+                        <h3>${{ gastos_total|floatformat:0 }}</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-arrow-down fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card balance-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Saldo Actual</h5>
+                        <h3 class="{% if saldo >= 0 %}text-success{% else %}text-danger{% endif %}">
+                            ${{ saldo|floatformat:0 }}
+                        </h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-wallet fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card">
+            <div class="card-body text-center text-white">
+                <h5 class="card-title">Acciones Rápidas</h5>
+                <a href="{% url 'registrar_ingreso' %}" class="btn btn-light btn-sm me-1">
+                    <i class="fas fa-plus"></i> Ingreso
+                </a>
+                <a href="{% url 'registrar_gasto' %}" class="btn btn-light btn-sm">
+                    <i class="fas fa-minus"></i> Gasto
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Últimas Transacciones -->
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock me-2"></i>
+                    Últimas Transacciones
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if ultimas_transacciones %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Tipo</th>
+                                <th>Categoría</th>
+                                <th>Monto</th>
+                                <th>Descripción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaccion in ultimas_transacciones %}
+                            <tr>
+                                <td>{{ transaccion.fecha|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    {% if transaccion.tipo == 'ingreso' %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-arrow-up me-1"></i>Ingreso
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-arrow-down me-1"></i>Gasto
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ transaccion.categoria.nombre }}</td>
+                                <td class="{% if transaccion.tipo == 'ingreso' %}text-success{% else %}text-danger{% endif %}">
+                                    ${{ transaccion.monto|floatformat:0 }}
+                                </td>
+                                <td>{{ transaccion.descripcion|truncatechars:30|default:"-" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{% url 'lista_transacciones' %}" class="btn btn-primary">
+                        Ver Todas las Transacciones
+                    </a>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No hay transacciones registradas aún</p>
+                    <a href="{% url 'registrar_ingreso' %}" class="btn btn-success me-2">
+                        <i class="fas fa-plus me-1"></i>Registrar Ingreso
+                    </a>
+                    <a href="{% url 'registrar_gasto' %}" class="btn btn-danger">
+                        <i class="fas fa-minus me-1"></i>Registrar Gasto
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Gastos por Categoría -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Gastos por Categoría (Este Mes)
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if gastos_por_categoria %}
+                    {% for gasto in gastos_por_categoria %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small">{{ gasto.categoria__nombre }}</span>
+                        <span class="badge bg-danger">${{ gasto.total|floatformat:0 }}</span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <p class="text-muted small">No hay gastos este mes</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Ingresos por Categoría -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Ingresos por Categoría (Este Mes)
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if ingresos_por_categoria %}
+                    {% for ingreso in ingresos_por_categoria %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small">{{ ingreso.categoria__nombre }}</span>
+                        <span class="badge bg-success">${{ ingreso.total|floatformat:0 }}</span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <p class="text-muted small">No hay ingresos este mes</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

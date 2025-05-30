@@ -1,0 +1,82 @@
+{% extends 'finanzas/base.html' %}
+
+{% block title %}Eliminar Transacción - Control de Finanzas{% endblock %}
+{% block header %}Eliminar Transacción{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-trash me-2"></i>
+                    Confirmar Eliminación
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>¡Atención!</strong> Esta acción no se puede deshacer.
+                </div>
+                
+                <p>¿Estás seguro de que quieres eliminar la siguiente transacción?</p>
+                
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Tipo:</strong> 
+                                    {% if transaccion.tipo == 'ingreso' %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-arrow-up me-1"></i>Ingreso
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-arrow-down me-1"></i>Gasto
+                                        </span>
+                                    {% endif %}
+                                </p>
+                                <p><strong>Categoría:</strong> {{ transaccion.categoria.nombre }}</p>
+                                <p><strong>Monto:</strong> 
+                                    <span class="{% if transaccion.tipo == 'ingreso' %}text-success{% else %}text-danger{% endif %}">
+                                        <strong>${{ transaccion.monto|floatformat:0 }}</strong>
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Fecha:</strong> {{ transaccion.fecha|date:"d/m/Y H:i" }}</p>
+                                <p><strong>Descripción:</strong> {{ transaccion.descripcion|default:"Sin descripción" }}</p>
+                                <p><strong>Creado:</strong> {{ transaccion.fecha_creacion|date:"d/m/Y H:i" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <form method="post" class="mt-3">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'lista_transacciones' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i>Sí, Eliminar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Información adicional -->
+        <div class="card mt-3">
+            <div class="card-body">
+                <h6><i class="fas fa-info-circle me-2"></i>Información</h6>
+                <ul class="small text-muted mb-0">
+                    <li>Al eliminar esta transacción, se actualizará automáticamente tu saldo</li>
+                    <li>Esta acción no se puede deshacer</li>
+                    <li>Si eliminaste por error, tendrás que crear una nueva transacción</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

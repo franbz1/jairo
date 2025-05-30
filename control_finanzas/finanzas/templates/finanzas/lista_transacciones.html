@@ -1,0 +1,164 @@
+{% extends 'finanzas/base.html' %}
+
+{% block title %}Transacciones - Control de Finanzas{% endblock %}
+{% block header %}Todas las Transacciones{% endblock %}
+
+{% block content %}
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-body">
+        <h6><i class="fas fa-filter me-2"></i>Filtros</h6>
+        <form method="get" class="row">
+            <div class="col-md-4 mb-2">
+                <select name="tipo" class="form-control">
+                    <option value="">Todos los tipos</option>
+                    <option value="ingreso" {% if tipo_filtro == 'ingreso' %}selected{% endif %}>Ingresos</option>
+                    <option value="gasto" {% if tipo_filtro == 'gasto' %}selected{% endif %}>Gastos</option>
+                </select>
+            </div>
+            <div class="col-md-4 mb-2">
+                <select name="categoria" class="form-control">
+                    <option value="">Todas las categorías</option>
+                    {% for categoria in categorias %}
+                    <option value="{{ categoria.id }}" {% if categoria_filtro == categoria.id|stringformat:'s' %}selected{% endif %}>
+                        {{ categoria.nombre }} ({{ categoria.get_tipo_display }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 mb-2">
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-1"></i>Filtrar
+                    </button>
+                    <a href="{% url 'lista_transacciones' %}" class="btn btn-secondary">
+                        <i class="fas fa-times me-1"></i>Limpiar
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Lista de Transacciones -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="fas fa-list me-2"></i>
+            Transacciones ({{ transacciones.count }})
+        </h5>
+        <div>
+            <a href="{% url 'registrar_ingreso' %}" class="btn btn-success btn-sm">
+                <i class="fas fa-plus me-1"></i>Ingreso
+            </a>
+            <a href="{% url 'registrar_gasto' %}" class="btn btn-danger btn-sm">
+                <i class="fas fa-minus me-1"></i>Gasto
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if transacciones %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Tipo</th>
+                        <th>Categoría</th>
+                        <th>Monto</th>
+                        <th>Descripción</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaccion in transacciones %}
+                    <tr>
+                        <td>{{ transaccion.fecha|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            {% if transaccion.tipo == 'ingreso' %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-arrow-up me-1"></i>Ingreso
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger">
+                                    <i class="fas fa-arrow-down me-1"></i>Gasto
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>{{ transaccion.categoria.nombre }}</td>
+                        <td class="{% if transaccion.tipo == 'ingreso' %}text-success{% else %}text-danger{% endif %}">
+                            <strong>${{ transaccion.monto|floatformat:0 }}</strong>
+                        </td>
+                        <td>{{ transaccion.descripcion|truncatechars:50|default:"-" }}</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'editar_transaccion' transaccion.pk %}" 
+                                   class="btn btn-sm btn-outline-primary" 
+                                   title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'eliminar_transaccion' transaccion.pk %}" 
+                                   class="btn btn-sm btn-outline-danger" 
+                                   title="Eliminar"
+                                   onclick="return confirm('¿Estás seguro de que quieres eliminar esta transacción?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Resumen rápido -->
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-chart-line me-2"></i>Resumen de Transacciones Mostradas</h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <strong>Total Ingresos:</strong> 
+                            <span class="text-success">
+                                ${% for t in transacciones %}{% if t.tipo == 'ingreso' %}{{ t.monto|add:0 }}{% if not forloop.last %}+{% endif %}{% endif %}{% empty %}0{% endfor %}
+                            </span>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Total Gastos:</strong> 
+                            <span class="text-danger">
+                                ${% for t in transacciones %}{% if t.tipo == 'gasto' %}{{ t.monto|add:0 }}{% if not forloop.last %}+{% endif %}{% endif %}{% empty %}0{% endfor %}
+                            </span>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Balance:</strong> 
+                            <span class="text-primary">Ver dashboard para balance total</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+            <h5 class="text-muted">No hay transacciones</h5>
+            <p class="text-muted">
+                {% if tipo_filtro or categoria_filtro %}
+                    No se encontraron transacciones con los filtros aplicados.
+                {% else %}
+                    Aún no has registrado ninguna transacción.
+                {% endif %}
+            </p>
+            <div class="mt-3">
+                <a href="{% url 'registrar_ingreso' %}" class="btn btn-success me-2">
+                    <i class="fas fa-plus me-1"></i>Registrar Ingreso
+                </a>
+                <a href="{% url 'registrar_gasto' %}" class="btn btn-danger">
+                    <i class="fas fa-minus me-1"></i>Registrar Gasto
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

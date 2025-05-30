@@ -1,0 +1,276 @@
+{% extends 'finanzas/base.html' %}
+
+{% block title %}Reportes - Control de Finanzas{% endblock %}
+{% block header %}Reportes Financieros{% endblock %}
+
+{% block content %}
+<!-- Resumen General -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="card stat-card income-card text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-arrow-up fa-3x mb-2"></i>
+                <h4>Ingresos Totales</h4>
+                <h2>${{ ingresos_total|floatformat:0 }}</h2>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-3">
+        <div class="card stat-card expense-card text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-arrow-down fa-3x mb-2"></i>
+                <h4>Gastos Totales</h4>
+                <h2>${{ gastos_total|floatformat:0 }}</h2>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-3">
+        <div class="card stat-card balance-card">
+            <div class="card-body text-center">
+                <i class="fas fa-wallet fa-3x mb-2"></i>
+                <h4>Saldo Final</h4>
+                <h2 class="{% if saldo >= 0 %}text-success{% else %}text-danger{% endif %}">
+                    ${{ saldo|floatformat:0 }}
+                </h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Análisis por Categorías -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Ingresos por Categoría
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if ingresos_por_categoria %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Categoría</th>
+                                <th class="text-end">Monto</th>
+                                <th class="text-end">%</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ingreso in ingresos_por_categoria %}
+                            <tr>
+                                <td>{{ ingreso.categoria__nombre }}</td>
+                                <td class="text-end text-success">
+                                    <strong>${{ ingreso.total|floatformat:0 }}</strong>
+                                </td>
+                                <td class="text-end">
+                                    <span class="badge bg-success">
+                                        {% widthratio ingreso.total ingresos_total 100 %}%
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-success">
+                                <th>Total</th>
+                                <th class="text-end">${{ ingresos_total|floatformat:0 }}</th>
+                                <th class="text-end">100%</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No hay ingresos registrados</p>
+                    <a href="{% url 'registrar_ingreso' %}" class="btn btn-success">
+                        <i class="fas fa-plus me-1"></i>Registrar Primer Ingreso
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Gastos por Categoría
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if gastos_por_categoria %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Categoría</th>
+                                <th class="text-end">Monto</th>
+                                <th class="text-end">%</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for gasto in gastos_por_categoria %}
+                            <tr>
+                                <td>{{ gasto.categoria__nombre }}</td>
+                                <td class="text-end text-danger">
+                                    <strong>${{ gasto.total|floatformat:0 }}</strong>
+                                </td>
+                                <td class="text-end">
+                                    <span class="badge bg-danger">
+                                        {% widthratio gasto.total gastos_total 100 %}%
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-danger">
+                                <th>Total</th>
+                                <th class="text-end">${{ gastos_total|floatformat:0 }}</th>
+                                <th class="text-end">100%</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No hay gastos registrados</p>
+                    <a href="{% url 'registrar_gasto' %}" class="btn btn-danger">
+                        <i class="fas fa-minus me-1"></i>Registrar Primer Gasto
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Análisis Financiero -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-analytics me-2"></i>
+                    Análisis Financiero
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h6>Tasa de Ahorro</h6>
+                            {% if ingresos_total > 0 %}
+                                {% widthratio saldo ingresos_total 100 as tasa_ahorro %}
+                                <h4 class="{% if tasa_ahorro >= 20 %}text-success{% elif tasa_ahorro >= 10 %}text-warning{% else %}text-danger{% endif %}">
+                                    {{ tasa_ahorro }}%
+                                </h4>
+                                <small class="text-muted">
+                                    {% if tasa_ahorro >= 20 %}
+                                        ¡Excelente!
+                                    {% elif tasa_ahorro >= 10 %}
+                                        Bueno
+                                    {% else %}
+                                        Mejorable
+                                    {% endif %}
+                                </small>
+                            {% else %}
+                                <h4 class="text-muted">N/A</h4>
+                                <small class="text-muted">Sin ingresos</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h6>Ratio Gasto/Ingreso</h6>
+                            {% if ingresos_total > 0 %}
+                                {% widthratio gastos_total ingresos_total 100 as ratio_gasto %}
+                                <h4 class="{% if ratio_gasto <= 80 %}text-success{% elif ratio_gasto <= 90 %}text-warning{% else %}text-danger{% endif %}">
+                                    {{ ratio_gasto }}%
+                                </h4>
+                                <small class="text-muted">
+                                    {% if ratio_gasto <= 80 %}
+                                        Controlado
+                                    {% elif ratio_gasto <= 90 %}
+                                        Moderado
+                                    {% else %}
+                                        Alto
+                                    {% endif %}
+                                </small>
+                            {% else %}
+                                <h4 class="text-muted">N/A</h4>
+                                <small class="text-muted">Sin ingresos</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h6>Estado Financiero</h6>
+                            {% if saldo > 0 %}
+                                <h4 class="text-success">Positivo</h4>
+                                <small class="text-success">Tienes ahorros</small>
+                            {% elif saldo == 0 %}
+                                <h4 class="text-warning">Equilibrado</h4>
+                                <small class="text-warning">Sin ahorros ni deudas</small>
+                            {% else %}
+                                <h4 class="text-danger">Negativo</h4>
+                                <small class="text-danger">Gastas más de lo que ingresas</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h6>Recomendación</h6>
+                            {% if saldo > 0 and ingresos_total > 0 %}
+                                {% widthratio saldo ingresos_total 100 as tasa_ahorro %}
+                                {% if tasa_ahorro >= 20 %}
+                                    <h4 class="text-success">¡Sigue así!</h4>
+                                    <small class="text-success">Excelente control</small>
+                                {% else %}
+                                    <h4 class="text-warning">Mejora</h4>
+                                    <small class="text-warning">Intenta ahorrar más</small>
+                                {% endif %}
+                            {% else %}
+                                <h4 class="text-danger">Revisa</h4>
+                                <small class="text-danger">Controla tus gastos</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Acciones Rápidas -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body text-center">
+                <h6>Acciones Rápidas</h6>
+                <a href="{% url 'lista_transacciones' %}" class="btn btn-primary me-2">
+                    <i class="fas fa-list me-1"></i>Ver Todas las Transacciones
+                </a>
+                <a href="{% url 'registrar_ingreso' %}" class="btn btn-success me-2">
+                    <i class="fas fa-plus me-1"></i>Nuevo Ingreso
+                </a>
+                <a href="{% url 'registrar_gasto' %}" class="btn btn-danger">
+                    <i class="fas fa-minus me-1"></i>Nuevo Gasto
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,107 @@
+{% extends 'finanzas/base.html' %}
+
+{% block title %}Registrar Ingreso - Control de Finanzas{% endblock %}
+{% block header %}Registrar Nuevo Ingreso{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-plus-circle me-2"></i>
+                    Registrar Nuevo Ingreso
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.categoria.id_for_label }}" class="form-label">
+                                <i class="fas fa-tags me-1"></i>Categoría
+                            </label>
+                            {{ form.categoria }}
+                            {% if form.categoria.errors %}
+                                <div class="text-danger small">{{ form.categoria.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.monto.id_for_label }}" class="form-label">
+                                <i class="fas fa-dollar-sign me-1"></i>Monto
+                            </label>
+                            {{ form.monto }}
+                            {% if form.monto.errors %}
+                                <div class="text-danger small">{{ form.monto.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.fecha.id_for_label }}" class="form-label">
+                            <i class="fas fa-calendar me-1"></i>Fecha y Hora
+                        </label>
+                        {{ form.fecha }}
+                        {% if form.fecha.errors %}
+                            <div class="text-danger small">{{ form.fecha.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.descripcion.id_for_label }}" class="form-label">
+                            <i class="fas fa-comment me-1"></i>Descripción (Opcional)
+                        </label>
+                        {{ form.descripcion }}
+                        {% if form.descripcion.errors %}
+                            <div class="text-danger small">{{ form.descripcion.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    {{ form.tipo }}
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save me-1"></i>Guardar Ingreso
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Ayuda -->
+        <div class="card mt-3">
+            <div class="card-body">
+                <h6><i class="fas fa-info-circle me-2"></i>Consejos</h6>
+                <ul class="small text-muted mb-0">
+                    <li>Asegúrate de seleccionar la categoría correcta para tu ingreso</li>
+                    <li>Puedes editar la fecha si el ingreso no fue realizado hoy</li>
+                    <li>La descripción te ayudará a recordar el origen del ingreso</li>
+                    <li>Si no encuentras una categoría adecuada, contacta al administrador</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Establecer fecha y hora actual por defecto
+document.addEventListener('DOMContentLoaded', function() {
+    const fechaInput = document.getElementById('id_fecha');
+    if (fechaInput && !fechaInput.value) {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        
+        fechaInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+    }
+});
+</script>
+{% endblock %} 
